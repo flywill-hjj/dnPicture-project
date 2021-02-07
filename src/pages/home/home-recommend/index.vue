@@ -7,9 +7,14 @@
   >
     <!-- 推荐 开始 -->
     <view class="recommend_wrap">
-      <view class="recommend_item" v-for="item in recommends" :key="item.id">
+      <navigator
+        :url="`/pages/album/index?id=${item.target}`"
+        class="recommend_item"
+        v-for="item in recommends"
+        :key="item.id"
+      >
         <image mode="widthFix" :src="item.thumb"></image>
-      </view>
+      </navigator>
     </view>
     <!-- 推荐 结束 -->
 
@@ -26,11 +31,17 @@
         <view class="months_title_more">更多 > </view>
       </view>
       <view class="months_content">
-        <view class="months_item" v-for="item in months.items" :key="item.id">
-          <image
-            mode="aspectFill"
-            :src="item.thumb + item.rule.replace('$<Height>', 360)"
-          ></image>
+        <view
+          class="months_item"
+          v-for="(item, index) in months.items"
+          :key="item.id"
+        >
+          <go-detail :list="months.items" :index="index">
+            <image
+              mode="aspectFill"
+              :src="item.thumb + item.rule.replace('$<Height>', 360)"
+            ></image>
+          </go-detail>
         </view>
       </view>
     </view>
@@ -42,8 +53,10 @@
         <text>热门</text>
       </view>
       <view class="hots_content">
-        <view class="hot_item" v-for="item in hots" :key="item.id">
-          <image mode="widthFix" :src="item.thumb"></image>
+        <view class="hot_item" v-for="(item, index) in hots" :key="item.id">
+          <go-detail :list="hots" :index="index">
+            <image mode="widthFix" :src="item.thumb"></image>
+          </go-detail>
         </view>
       </view>
     </view>
@@ -53,6 +66,7 @@
 
 <script>
 import moment from "moment";
+import goDetail from "@/components/goDetail";
 export default {
   data() {
     return {
@@ -75,7 +89,14 @@ export default {
       hasMore: true,
     };
   },
+  components: {
+    goDetail,
+  },
   mounted() {
+     //修改页面的标题
+    uni.setNavigationBarTitle({
+      title: "专辑",
+    });
     this.getList();
   },
   methods: {
@@ -88,6 +109,10 @@ export default {
         //判断还没有有下一页数据
         if (result.res.vertical.length === 0) {
           this.hasMore = false;
+          uni.showToast({
+            title: "没有更多数据了",
+            icon: "none",
+          });
           return;
         }
 
@@ -108,7 +133,7 @@ export default {
     },
     //滚动条触底事件
     handleToLower() {
-      /* 
+      /*
        1 修改参数 skip+=limit;
        2 重新发送请求 getList()
        3 请求回来成功 hots 数据的叠加
@@ -198,8 +223,6 @@ export default {
     .hot_item {
       width: 33.33%;
       border: 5rpx solid #ffffff;
-      image {
-      }
     }
   }
 }

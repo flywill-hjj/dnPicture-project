@@ -38,7 +38,7 @@ export default {
   data() {
     return {
       items: [{ title: "推荐" }, { title: "分类" }, { title: "最新" }, { title: "专辑" }],
-      current: 3,
+      current: 0,
     };
   },
   methods: {
@@ -47,7 +47,7 @@ export default {
         this.current = e.currentIndex;
       }
     },
-  }
+  },
 };
 </script>
 
@@ -65,8 +65,6 @@ export default {
       transform: translateY(-50%);
       right: 5%;
     }
-  }
-  .home_tab_content {
   }
 }
 </style>

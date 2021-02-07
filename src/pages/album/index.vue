@@ -9,10 +9,41 @@
       </view>
     </view>
     <!-- 专辑背景 结束 -->
+
+    <!-- 专辑作者 开始 -->
+    <view class="album_author">
+      <view class="album_author_info">
+        <image mode="widthFix" :src="album.user.avatar"></image>
+        <view class="author_name">{{ album.user.name }}</view>
+      </view>
+
+      <view class="album_author_desc">
+        <text>{{ album.desc }}</text>
+      </view>
+    </view>
+    <!-- 专辑作者 结束 -->
+
+    <!-- 列表 开始 -->
+    <view class="album_list">
+      <view
+        class="album_item"
+        v-for="(item, index) in wallpaper"
+        :key="item.id"
+      >
+        <go-detail :list="wallpaper" :index="index">
+          <image
+            mode="aspectFill"
+            :src="item.thumb + item.rule.replace('$<Height>', 360)"
+          ></image>
+        </go-detail>
+      </view>
+    </view>
+    <!-- 列表 结束 -->
   </view>
 </template>
 
 <script>
+import goDetail from "@/components/goDetail";
 export default {
   data() {
     return {
@@ -27,12 +58,29 @@ export default {
       id: -1,
       album: {},
       wallpaper: [],
+      hasMore: true,
     };
   },
+  components: {
+    goDetail,
+  },
   onLoad(options) {
-    // this.id = options.id;
-    this.id = "5e5cf679e7bce739db1281e4";
+    this.id = options.id;
+    this.id = "5d5f8e45e7bce75ae7fb8278";
     this.getList();
+  },
+  //页面触底 上拉加载下一页事件
+  onReachBottom() {
+    if (this.hasMore) {
+      this.params.first = 0;
+      this.params.skip += this.params.limit;
+      this.getList();
+    } else {
+      uni.showToast({
+        title: "没有更多数据了",
+        icon: "none",
+      });
+    }
   },
   methods: {
     getList() {
@@ -40,9 +88,18 @@ export default {
         url: `http://157.122.54.189:9088/image/v1/wallpaper/album/${this.id}/wallpaper`,
         data: this.params,
       }).then((result) => {
-        console.log(result);
-        this.album = result.res.album;
-        this.wallpaper = result.res.wallpaper;
+        if (Object.keys(this.album).length === 0) {
+          this.album = result.res.album;
+        }
+        if (result.res.wallpaper.length === 0) {
+          this.hasMore = false;
+          uni.showToast({
+            title: "没有更多数据了",
+            icon: "none",
+          });
+          return;
+        }
+        this.wallpaper = [...this.wallpaper, ...result.res.wallpaper];
       });
     },
   },
@@ -52,8 +109,6 @@ export default {
 <style scoped lang="scss">
 .album_bg {
   position: relative;
-  image {
-  }
 
   .album_info {
     position: absolute;
@@ -78,6 +133,33 @@ export default {
       justify-content: center;
       align-items: center;
       border-radius: 10rpx;
+    }
+  }
+}
+
+.album_author {
+  padding: 10rpx;
+  .album_author_info {
+    padding: 10rpx 0;
+    display: flex;
+    image {
+      width: 50rpx;
+    }
+
+    .author_name {
+      color: #000;
+      margin-left: 15rpx;
+    }
+  }
+}
+.album_list {
+  display: flex;
+  flex-wrap: wrap;
+  .album_item {
+    width: 33.33%;
+    border: 3rpx solid #fff;
+    image {
+      height: 160rpx;
     }
   }
 }
